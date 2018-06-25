@@ -520,6 +520,7 @@ class AnnoyIndexInterface {
   virtual void build(int q) = 0;
   virtual void unbuild() = 0;
   virtual bool save(const char* filename) = 0;
+  virtual bool save_unrelease(const char* filename) = 0;
   virtual void unload() = 0;
   virtual bool load(const char* filename) = 0;
   virtual T get_distance(S i, S j) = 0;
@@ -613,7 +614,6 @@ public:
 	if (_get(i)->n_descendants >= 1) // Issue #223
           indices.push_back(i);
       }
-
       _roots.push_back(_make_tree(indices, true));
     }
     // Also, copy the roots into the last segment of the array
@@ -625,7 +625,7 @@ public:
 
     if (_verbose) showUpdate("has %d nodes\n", _n_nodes);
   }
-  
+
   void unbuild() {
     if (_loaded) {
       showUpdate("You can't unbuild a loaded index\n");
@@ -646,6 +646,17 @@ public:
 
     unload();
     return load(filename);
+  }
+
+  bool save_unrelease(const char* filename) {
+    FILE *f = fopen(filename, "wb");
+    if (f == NULL)
+      return false;
+
+    fwrite(_nodes, _s, _n_nodes, f);
+    fclose(f);
+
+    return true;
   }
 
   void reinitialize() {

@@ -69,6 +69,7 @@ public:
   void build(int q) { _index.build(q); };
   void unbuild() { _index.unbuild(); };
   bool save(const char* filename) { return _index.save(filename); };
+  bool save_unrelease(const char* filename) { return _index.save_unrelease(filename); };
   void unload() { _index.unload(); };
   bool load(const char* filename) { return _index.load(filename); };
   float get_distance(int32_t i, int32_t j) { return _index.get_distance(i, j); };
@@ -138,19 +139,19 @@ py_an_new(PyTypeObject *type, PyObject *args, PyObject *kwargs) {
 }
 
 
-static int 
+static int
 py_an_init(py_annoy *self, PyObject *args, PyObject *kwargs) {
   // Seems to be needed for Python 3
   const char *metric = NULL;
   int f;
   static char const * kwlist[] = {"f", "metric", NULL};
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "i|s", (char**)kwlist, &f, &metric))
-    return NULL;
+    return -1;
   return 0;
 }
 
 
-static void 
+static void
 py_an_dealloc(py_annoy* self) {
   delete self->ptr;
   Py_TYPE(self)->tp_free((PyObject*)self);
@@ -168,7 +169,7 @@ static PyObject *
 py_an_load(py_annoy *self, PyObject *args, PyObject *kwargs) {
   char* filename;
   bool res = false;
-  if (!self->ptr) 
+  if (!self->ptr)
     return NULL;
   static char const * kwlist[] = {"fn", NULL};
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s", (char**)kwlist, &filename))
@@ -188,13 +189,32 @@ static PyObject *
 py_an_save(py_annoy *self, PyObject *args, PyObject *kwargs) {
   char *filename;
   bool res = false;
-  if (!self->ptr) 
+  if (!self->ptr)
     return NULL;
   static char const * kwlist[] = {"fn", NULL};
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s", (char**)kwlist, &filename))
     return NULL;
 
   res = self->ptr->save(filename);
+
+  if (!res) {
+    PyErr_SetFromErrno(PyExc_IOError);
+    return NULL;
+  }
+  Py_RETURN_TRUE;
+}
+
+static PyObject *
+py_an_save_unrelease(py_annoy *self, PyObject *args, PyObject *kwargs) {
+  char *filename;
+  bool res = false;
+  if (!self->ptr)
+    return NULL;
+  static char const * kwlist[] = {"fn", NULL};
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s", (char**)kwlist, &filename))
+    return NULL;
+
+  res = self->ptr->save_unrelease(filename);
 
   if (!res) {
     PyErr_SetFromErrno(PyExc_IOError);
@@ -236,10 +256,10 @@ bool check_constraints(py_annoy *self, int32_t item, bool building) {
   }
 }
 
-static PyObject* 
+static PyObject*
 py_an_get_nns_by_item(py_annoy *self, PyObject *args, PyObject *kwargs) {
   int32_t item, n, search_k=-1, include_distances=0;
-  if (!self->ptr) 
+  if (!self->ptr)
     return NULL;
 
   static char const * kwlist[] = {"i", "n", "search_k", "include_distances", NULL};
@@ -277,11 +297,11 @@ convert_list_to_vector(PyObject* v, int f, vector<float>* w) {
   return true;
 }
 
-static PyObject* 
+static PyObject*
 py_an_get_nns_by_vector(py_annoy *self, PyObject *args, PyObject *kwargs) {
   PyObject* v;
   int32_t n, search_k=-1, include_distances=0;
-  if (!self->ptr) 
+  if (!self->ptr)
     return NULL;
 
   static char const * kwlist[] = {"vector", "n", "search_k", "include_distances", NULL};
@@ -304,10 +324,10 @@ py_an_get_nns_by_vector(py_annoy *self, PyObject *args, PyObject *kwargs) {
 }
 
 
-static PyObject* 
+static PyObject*
 py_an_get_item_vector(py_annoy *self, PyObject *args) {
   int32_t item;
-  if (!self->ptr) 
+  if (!self->ptr)
     return NULL;
   if (!PyArg_ParseTuple(args, "i", &item))
     return NULL;
@@ -327,11 +347,11 @@ py_an_get_item_vector(py_annoy *self, PyObject *args) {
 }
 
 
-static PyObject* 
+static PyObject*
 py_an_add_item(py_annoy *self, PyObject *args, PyObject* kwargs) {
   PyObject* v;
   int32_t item;
-  if (!self->ptr) 
+  if (!self->ptr)
     return NULL;
   static char const * kwlist[] = {"i", "vector", NULL};
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "iO", (char**)kwlist, &item, &v))
@@ -354,7 +374,7 @@ py_an_add_item(py_annoy *self, PyObject *args, PyObject* kwargs) {
 static PyObject *
 py_an_build(py_annoy *self, PyObject *args, PyObject *kwargs) {
   int q;
-  if (!self->ptr) 
+  if (!self->ptr)
     return NULL;
   static char const * kwlist[] = {"n_trees", NULL};
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "i", (char**)kwlist, &q))
@@ -370,9 +390,9 @@ py_an_build(py_annoy *self, PyObject *args, PyObject *kwargs) {
 
 static PyObject *
 py_an_unbuild(py_annoy *self) {
-  if (!self->ptr) 
+  if (!self->ptr)
     return NULL;
-  
+
   Py_BEGIN_ALLOW_THREADS;
   self->ptr->unbuild();
   Py_END_ALLOW_THREADS;
@@ -383,7 +403,7 @@ py_an_unbuild(py_annoy *self) {
 
 static PyObject *
 py_an_unload(py_annoy *self) {
-  if (!self->ptr) 
+  if (!self->ptr)
     return NULL;
 
   self->ptr->unload();
@@ -395,7 +415,7 @@ py_an_unload(py_annoy *self) {
 static PyObject *
 py_an_get_distance(py_annoy *self, PyObject *args) {
   int32_t i, j;
-  if (!self->ptr) 
+  if (!self->ptr)
     return NULL;
   if (!PyArg_ParseTuple(args, "ii", &i, &j))
     return NULL;
@@ -411,7 +431,7 @@ py_an_get_distance(py_annoy *self, PyObject *args) {
 
 static PyObject *
 py_an_get_n_items(py_annoy *self) {
-  if (!self->ptr) 
+  if (!self->ptr)
     return NULL;
 
   int32_t n = self->ptr->get_n_items();
@@ -422,7 +442,7 @@ py_an_get_n_items(py_annoy *self) {
 static PyObject *
 py_an_verbose(py_annoy *self, PyObject *args) {
   int verbose;
-  if (!self->ptr) 
+  if (!self->ptr)
     return NULL;
   if (!PyArg_ParseTuple(args, "i", &verbose))
     return NULL;
@@ -450,6 +470,7 @@ py_an_set_seed(py_annoy *self, PyObject *args) {
 static PyMethodDef AnnoyMethods[] = {
   {"load",	(PyCFunction)py_an_load, METH_VARARGS | METH_KEYWORDS, "Loads (mmaps) an index from disk."},
   {"save",	(PyCFunction)py_an_save, METH_VARARGS | METH_KEYWORDS, "Saves the index to disk."},
+  {"save_unrelease",	(PyCFunction)py_an_save_unrelease, METH_VARARGS | METH_KEYWORDS, "Saves the index to disk but unrelease the memory."},
   {"get_nns_by_item",(PyCFunction)py_an_get_nns_by_item, METH_VARARGS | METH_KEYWORDS, "Returns the `n` closest items to item `i`.\n\n:param search_k: the query will inspect up to `search_k` nodes.\n`search_k` gives you a run-time tradeoff between better accuracy and speed.\n`search_k` defaults to `n_trees * n` if not provided.\n\n:param include_distances: If `True`, this function will return a\n2 element tuple of lists. The first list contains the `n` closest items.\nThe second list contains the corresponding distances."},
   {"get_nns_by_vector",(PyCFunction)py_an_get_nns_by_vector, METH_VARARGS | METH_KEYWORDS, "Returns the `n` closest items to vector `vector`.\n\n:param search_k: the query will inspect up to `search_k` nodes.\n`search_k` gives you a run-time tradeoff between better accuracy and speed.\n`search_k` defaults to `n_trees * n` if not provided.\n\n:param include_distances: If `True`, this function will return a\n2 element tuple of lists. The first list contains the `n` closest items.\nThe second list contains the corresponding distances."},
   {"get_item_vector",(PyCFunction)py_an_get_item_vector, METH_VARARGS, "Returns the vector for item `i` that was previously added."},
