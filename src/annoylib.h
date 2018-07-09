@@ -673,7 +673,7 @@ public:
     if (_fd) {
       // we have mmapped data
       close(_fd);
-      off_t size = _n_nodes * _s;
+      unsigned long size = _n_nodes * _s;
       munmap(_nodes, size);
     } else if (_nodes) {
       // We have heap allocated data
@@ -689,7 +689,7 @@ public:
       _fd = 0;
       return false;
     }
-    off_t size = lseek(_fd, 0, SEEK_END);
+    unsigned long size = lseek(_fd, 0, SEEK_END);
 #ifdef MAP_POPULATE
     _nodes = (Node*)mmap(
         0, size, PROT_READ, MAP_SHARED | MAP_POPULATE, _fd, 0);
