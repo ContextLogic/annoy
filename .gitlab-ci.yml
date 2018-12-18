@@ -11,6 +11,7 @@ upload_egg:
     - curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py"
     - python get-pip.py
     - pip install pyOpenSSL ndg-httpsclient pyasn1
+    - pip install install cryptography
     - pip install -U devpi-client
 
     # make sure there's only 1 "version=" line in the setup.py file
@@ -22,10 +23,10 @@ upload_egg:
     - pip install .
     - pip show $CI_PROJECT_NAME
 
-    # Upload to Wish Pypi
-    - devpi use $PYPI_SERVER
-    - devpi login $USERNAME --password=$PASSWORD
-    - devpi use $INDEX
-    - devpi upload
+    # # Upload to Wish Pypi
+    # - devpi use $PYPI_SERVER
+    # - devpi login $USERNAME --password=$PASSWORD
+    # - devpi use $INDEX
+    # - devpi upload
   # only:
   #   - master
