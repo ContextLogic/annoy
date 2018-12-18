@@ -1,7 +1,6 @@
 image: alpine
   
 upload_egg:
-  stage: test
   script:
     # Check if the package is actually installable
     - apk update
