@@ -1,20 +1,17 @@
-image: alpine
+image: ubuntu:16.04
   
 upload_egg:
   script:
     # add git as part of the egg upload
-    - apk update && apk add git
+    - apt-get update -y && apt-get install -y git
     - git config --global user.email "null@null.com"
     - git config --global user.name "null"
-
     # Check if the package is actually installable
-    - apk add python
-    - apk add --no-cache --virtual .build-deps gcc musl-dev
-    - apk add g++
-    - apk add python-dev
-    - apk add libffi-dev openssl-dev
-    - apk add py-pip
-    - pip install -U devpi-web devpi-client
+    - apt-get install -y python curl
+    - apt-get install -y python-dev libffi-dev
+    - curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py"
+    - python get-pip.py
+    - pip install -U devpi-client
 
     # make sure there's only 1 "version=" line in the setup.py file
     - (if [ "$(grep "      version='" setup.py | wc -l)" == "1" ]; then echo "Found the version number"; else echo "Fail"; exit 33; fi);
@@ -23,7 +20,7 @@ upload_egg:
     - version_cl="$version_origin+cl$CI_PIPELINE_ID"
     - sed -i "s/$version_origin/$version_cl/g" setup.py
     - pip install .
-    - pip show annoy
+    - pip show $CI_PROJECT_NAME
 
     # Upload to Wish Pypi
     - devpi use $PYPI_SERVER
