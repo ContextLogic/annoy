@@ -22,9 +22,9 @@ upload_egg:
     - pip show annoy
 
     # Upload to Wish Pypi
-    #- devpi use $PYPI_SERVER
-    #- devpi login $USERNAME --password=$PASSWORD
-    #- devpi use $INDEX
-    #- devpi upload
+    - devpi use $PYPI_SERVER
+    - devpi login $USERNAME --password=$PASSWORD
+    - devpi use $INDEX
+    - devpi upload
   only:
     - master
