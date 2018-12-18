@@ -11,7 +11,7 @@ upload_egg:
     - curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py"
     - python get-pip.py
     - pip install pyOpenSSL ndg-httpsclient pyasn1
-    - pip install install cryptography
+    - pip install install cryptography==2.2.2
     - pip install -U devpi-client
 
     # make sure there's only 1 "version=" line in the setup.py file
