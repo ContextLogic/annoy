@@ -2,9 +2,15 @@ image: ubuntu:14.04
   
 upload_egg:
   script:
-    - pip --version
+    - apt-get install -y python
+    - apt-get install -y python-dev libffi-dev
+    - apt-get install -y python-pip
     - which pip
-    - cat /usr/bin/pip
+    - pip --version  
+    - pip install --upgrade setuptools pip
+    - which pip
+    - pip --version
+    - /usr/local/bin/pip --version
   #   # add git as part of the egg upload
   #   - apt-get update -y && apt-get install -y git
   #   - git config --global user.email "null@null.com"
