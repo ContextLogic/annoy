@@ -7,6 +7,7 @@ upload_egg:
     - git config --global user.email "null@null.com"
     - git config --global user.name "null"
     # Check if the package is actually installable
+    - apt-get install -y g++
     - apt-get install -y python curl
     - apt-get install -y python-dev libffi-dev
     - curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py"
@@ -22,10 +23,10 @@ upload_egg:
     - pip install .
     - pip show $CI_PROJECT_NAME
 
-    # Upload to Wish Pypi
-    - devpi use $PYPI_SERVER
-    - devpi login $USERNAME --password=$PASSWORD
-    - devpi use $INDEX
-    - devpi upload
-  only:
-    - master
+  #   # Upload to Wish Pypi
+  #   - devpi use $PYPI_SERVER
+  #   - devpi login $USERNAME --password=$PASSWORD
+  #   - devpi use $INDEX
+  #   - devpi upload
+  # only:
+  #   - master
