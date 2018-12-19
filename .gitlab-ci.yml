@@ -11,7 +11,6 @@ upload_egg:
     - curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py"
     - python get-pip.py
     - pip install pyOpenSSL ndg-httpsclient pyasn1
-    - pip install urllib3[secure]
     - pip install -U devpi-client
 
     # make sure there's only 1 "version=" line in the setup.py file
@@ -28,5 +27,5 @@ upload_egg:
     - devpi login $USERNAME --password=$PASSWORD
     - devpi use $INDEX
     - devpi upload
-  # only:
-  #   - master
+  only:
+    - master
